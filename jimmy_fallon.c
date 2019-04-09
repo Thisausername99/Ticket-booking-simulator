@@ -13,21 +13,26 @@ void* phonecall(void* vargp) {
     static int connected = 0;    // Callers that are connected
     static sem_t connected_lock;
     static sem_t operators;
+    sem_t operators;
+	sem_init(&operators, 0, 3);
+//pthread_create
+	sem_wait(&operators);
+// Proceed with ticket ordering process
+	sem_post(&operators);
 }
 
 
 void *thread(void *vargp) {
+  sem_init()
   pthread_t[5];
-            
-  // Does this code create a "race condition"?
-  // Race Test:
-  //  (1) If there is no race, then each thread would get a different
-  //      value of i (received from the main thread).
-  //  (2) If there is no race, the set of values printed to stdout
-  //      would consist of one output for each value from 0 to 99.
-  int i = *((int *)vargp);
-  pthread_detach(pthread_self());
-  printf("%d\n", i);
+  for(int n=0;n<5;++n){
+  pthread_t[n]pthread_create(&next_id++,NULL,phonecall,NULL);
+  }
+  printf("This is a phone call\n");
+  for(int a=0;a<5;a++){
+  	pthread_join(pthread_t[n],NULL);
+  }
+
   return NULL;
 }
 
@@ -36,8 +41,13 @@ void *thread(void *vargp) {
 
 
 int main (void){
+pthread_t td1,td2,td3; // operator
+pthread_create(&td1,NULL,thread,NULL);
+pthread_create(&td2,NULL,thread,NULL);
+pthread_create(&td3,NULL,thread,NULL);
 
 
+return 0;
 }
 
 
