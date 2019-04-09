@@ -3,12 +3,15 @@
 #include <stdlib.h>
 #include <semaphore.h>
 
-int next_id;
+
+pthread_t next_id;
 sem_t lock;
 
 
 void* phonecall(void* vargp) {
-    static int NUM_OPERATORS = 3;
+  pthread_t tid=pthread_self();
+  printf("This is a phone call from thread[%u]\n",(unsigned int)tid);
+    /*static int NUM_OPERATORS = 3;
     static int NUM_LINES = 5;
     static int connected = 0;    // Callers that are connected
     static sem_t connected_lock;
@@ -23,7 +26,7 @@ void* phonecall(void* vargp) {
 
 //Print that an attempt to connect has been made.
 
-
+*/
 
 
 
@@ -42,19 +45,22 @@ void* phonecall(void* vargp) {
 
 
 void *thread(void *vargp) {
-  sem_init()
-  pthread_t[5];
-  for(int n=0;n<5;++n){
-  pthread_t[n]pthread_create(&next_id++,NULL,phonecall,NULL);
-  }
-  printf("This is a phone call\n");
-  for(int a=0;a<5;a++){
-  	pthread_join(pthread_t[n],NULL);
-  }
+  
+
+  printf("making\n");
+  pthread_t thread_arr[1];
+  /*for(int n=0;n<5;++n){*/
+  ++next_id;
+  pthread_create(&next_id,NULL,phonecall,NULL);
+  thread_arr[0]=next_id;
+  //}
+  //printf("This is a phone call\n");
+  //for(int a=0;a<5;a++){
+    pthread_join(thread_arr[0],NULL);
+  //}
 
   return NULL;
 }
-
 
 
 
@@ -64,7 +70,9 @@ pthread_t td1,td2,td3; // operator
 pthread_create(&td1,NULL,thread,NULL);
 pthread_create(&td2,NULL,thread,NULL);
 pthread_create(&td3,NULL,thread,NULL);
-
+pthread_join(tid1, NULL);
+pthread_join(tid2, NULL);
+pthread_join(tid3, NULL);
 
 return 0;
 }
