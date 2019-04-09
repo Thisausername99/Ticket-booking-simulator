@@ -1,7 +1,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <semaphore>
+#include <semaphore.h>
 
 int next_id;
 sem_t lock;
@@ -19,6 +19,25 @@ void* phonecall(void* vargp) {
 	sem_wait(&operators);
 // Proceed with ticket ordering process
 	sem_post(&operators);
+
+
+//Print that an attempt to connect has been made.
+
+
+
+
+
+//Check if the connection can be made:
+//You'll need to test connected in a critical section
+//If the line is busy, exit the critical section, print a message, and try again
+//If the line is not busy, update connected, exit the critical section, and print a message, and continue to the next step.
+//Wait for an operator to be available (use a counting semaphore)
+//Print a message that the order is being taken by an operator
+// a ticket order by sleeping for a few seconds (sleep(3))
+//Print a message that the order is complete (and update the semaphore)
+//Update connected (using a binary semaphore)
+//Print a message that the call is over
+
 }
 
 
