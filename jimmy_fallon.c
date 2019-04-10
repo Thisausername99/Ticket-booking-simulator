@@ -17,15 +17,12 @@ void* phonecall(void* vargp) {
     static sem_t connected_lock;
     static sem_t operators;
     sem_t operators;
-	sem_init(&operators, 0, 3);
+  sem_init(&operators, 0, 3);
 //pthread_create
-	sem_wait(&operators);
+  sem_wait(&operators);
 // Proceed with ticket ordering process
-	sem_post(&operators);
-
-
+  sem_post(&operators);
 //Print that an attempt to connect has been made.
-
 */
 
 
@@ -70,12 +67,9 @@ pthread_t td1,td2,td3; // operator
 pthread_create(&td1,NULL,thread,NULL);
 pthread_create(&td2,NULL,thread,NULL);
 pthread_create(&td3,NULL,thread,NULL);
-pthread_join(tid1, NULL);
-pthread_join(tid2, NULL);
-pthread_join(tid3, NULL);
+pthread_join(td1, NULL);
+pthread_join(td2, NULL);
+pthread_join(td3, NULL);
 
 return 0;
 }
-
-
-
