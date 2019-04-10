@@ -38,15 +38,12 @@ void* phonecall(void* vargp) {
 
     /*
     sem_t operators;
-	sem_init(&operators, 0, 3);
+  sem_init(&operators, 0, 3);
 //pthread_create
-	sem_wait(&operators);
+  sem_wait(&operators);
 // Proceed with ticket ordering process
-	sem_post(&operators);
-
-
+  sem_post(&operators);
 //Print that an attempt to connect has been made.
-
 */
 
 
@@ -103,8 +100,6 @@ pthread_join(tid1, NULL);
 pthread_join(tid2, NULL);
 pthread_join(tid3, NULL);
 
+
 return 0;
 }
-
-
-
