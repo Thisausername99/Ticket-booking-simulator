@@ -2,20 +2,41 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <semaphore.h>
+#include <unistd.h>
 
-
-pthread_t next_id;
+int next_id=1;
 sem_t lock;
-
+int num_call;
 
 void* phonecall(void* vargp) {
-  pthread_t tid=pthread_self();
-  printf("This is a phone call from thread[%u]\n",(unsigned int)tid);
-    /*static int NUM_OPERATORS = 3;
+    static int NUM_OPERATORS = 3;
     static int NUM_LINES = 5;
     static int connected = 0;    // Callers that are connected
     static sem_t connected_lock;
     static sem_t operators;
+    sem_init(&connected_lock,0,1);
+    sem_init(&operators,0,3);
+
+  pthread_t tid=pthread_self();
+  printf("This is a phone call from thread[%d]\n",next_id);
+    if(connected==NUM_LINES){
+      printf("The lines are busy, wait\n");
+
+    }
+    else{
+      //++connected;
+      sem_wait(&connected_lock);
+      ++connected;
+      printf("THREAD[%d] is speaking to operator\n",next_id);
+      --num_call;
+      sleep(3);
+      --connected;
+      sem_post(&connected_lock);
+      //--connected;
+    }
+  printf("Call is over\n");
+
+    /*
     sem_t operators;
 	sem_init(&operators, 0, 3);
 //pthread_create
@@ -46,13 +67,12 @@ void* phonecall(void* vargp) {
 
 void *thread(void *vargp) {
   
-
-  printf("making\n");
   pthread_t thread_arr[1];
   /*for(int n=0;n<5;++n){*/
+  pthread_t tid;
+  pthread_create(&tid,NULL,phonecall,&next_id);
+  thread_arr[0]=tid;
   ++next_id;
-  pthread_create(&next_id,NULL,phonecall,NULL);
-  thread_arr[0]=next_id;
   //}
   //printf("This is a phone call\n");
   //for(int a=0;a<5;a++){
@@ -65,11 +85,20 @@ void *thread(void *vargp) {
 
 
 
-int main (void){
-pthread_t td1,td2,td3; // operator
-pthread_create(&td1,NULL,thread,NULL);
-pthread_create(&td2,NULL,thread,NULL);
-pthread_create(&td3,NULL,thread,NULL);
+int main(int argc, char **argv) {
+sem_init(&lock,0,1);
+
+if (argc != 2) {
+    printf("There no phone call\n");
+    exit(0);
+}
+
+num_call=atoi(argv[0]);//conver number of call into integer
+
+pthread_t tid1,tid2,tid3; // operator
+pthread_create(&tid1,NULL,thread,NULL);
+pthread_create(&tid2,NULL,thread,NULL);
+pthread_create(&tid3,NULL,thread,NULL);
 pthread_join(tid1, NULL);
 pthread_join(tid2, NULL);
 pthread_join(tid3, NULL);
