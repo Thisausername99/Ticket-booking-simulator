@@ -3,6 +3,6 @@ OBJ = jimmy_fallon.o
 PROG = jimmy_fallon
 
 $(PROG): $(OBJ)
-	gcc $(OBJ) -o $(PROG)
+	gcc $(OBJ) -pthread -o $(PROG)
 
 $(OBJ): $(SRC)
