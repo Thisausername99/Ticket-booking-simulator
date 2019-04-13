@@ -62,14 +62,14 @@ void* phonecall(void* vargp) {
   sem_init(&connected_lock, 0, 1);
   bool done=false;
 
-  sem_wait(&connected_lock);
-  while(1){
   //sem_wait(&connected_lock);
+  while(1){
+  sem_wait(&connected_lock);
   if(connected == NUM_LINES){
     //printf("ALL LINES ARE BUSY.\n");
-    //sem_post(&connected_lock);
-    printf("ALL LINES ARE BUSY.\n");
-    //somehow get it to try again
+    sem_post(&connected_lock);
+    //printf("ALL LINES ARE BUSY.\n");
+    
   }
   else{
     //sem_wait(&connected_lock); //critical section of connected begins
@@ -79,9 +79,7 @@ void* phonecall(void* vargp) {
     break;
       }
   }
-    //sem_post(&connected_lock);
-    //printf("Thread[%d] has available line, call ringing\n",call_id); //*((unsigned int *)(vargp)));
-
+    
     sem_wait(&operators);
     printf("Thread[%d] is speaking to the operator\n", call_id);//*((unsigned int *)(vargp)));
     sleep(3);
