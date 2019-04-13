@@ -52,6 +52,7 @@ void* phonecall(void* vargp) {
   call_id=next_id;
 
   printf("Thread[%d] is calling, busy signal\n", call_id); //*((unsigned int *)(vargp)));
+  
   static int NUM_OPERATORS = 3;
   static int NUM_LINES = 5;
   static int connected = 0; // Callers that are connected
@@ -61,39 +62,42 @@ void* phonecall(void* vargp) {
   sem_init(&connected_lock, 0, 1);
   bool done=false;
 
-  
-  while(!done){
   sem_wait(&connected_lock);
+  while(1){
+  //sem_wait(&connected_lock);
   if(connected == NUM_LINES){
+    //printf("ALL LINES ARE BUSY.\n");
+    //sem_post(&connected_lock);
     printf("ALL LINES ARE BUSY.\n");
-    sem_post(&connected_lock);
     //somehow get it to try again
   }
   else{
     //sem_wait(&connected_lock); //critical section of connected begins
     num_ticket--;
     connected++; //increment connected callers
-    done=true;
     sem_post(&connected_lock); //exit critical section
-    //break;
+    break;
+      }
   }
-
-    printf("Thread[%d] has available line, call ringing\n",call_id); //*((unsigned int *)(vargp)));
+    //sem_post(&connected_lock);
+    //printf("Thread[%d] has available line, call ringing\n",call_id); //*((unsigned int *)(vargp)));
 
     sem_wait(&operators);
     printf("Thread[%d] is speaking to the operator\n", call_id);//*((unsigned int *)(vargp)));
     sleep(3);
     printf("Thread[%d] has bought a ticket!\n", call_id); //*((unsigned int *)(vargp)));
-    sem_post(&operators);
-
     sem_wait(&connected_lock); //critical section of connected begins
     connected--; //increment connected callers
     sem_post(&connected_lock); //exit critical section
     
+    sem_post(&operators);
+  
+
+    /*sem_wait(&connected_lock); //critical section of connected begins
+    connected--; //increment connected callers
+    sem_post(&connected_lock); //exit critical section*/
+    
     printf("Thread[%d] has hung up!\n", call_id);//*((unsigned int *)(vargp)));
-
-  }
-
 
 
 //Check if the connection can be made:
@@ -106,5 +110,5 @@ void* phonecall(void* vargp) {
 //Print a message that the order is complete (and update the semaphore)
 //Update connected (using a binary semaphore)
 //Print a message that the call is over
-
+return NULL;
 }
