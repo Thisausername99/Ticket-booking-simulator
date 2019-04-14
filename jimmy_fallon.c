@@ -15,23 +15,21 @@ int num_ticket =240;
 void* phonecall(void* vargp); //phonecall routine prototype
 
 int main (int argc, char** argv){
-  int index = 0;
   int size = atoi(argv[1]);
-  sem_init(&lock, 0, 1);
   pthread_t ids[size];
-  pthread_t tid;
-  //pthread_t newIds[size]; //to cheese the ids
+  //pthread_t tid;
+ 
   for(int n=0;n<size;++n){
-
+    pthread_t tid;
     //newIds[index] = next_id;
     pthread_create(&tid, NULL, phonecall, NULL);
     ids[n]=tid;
     //next_id++;
   }
   //index = 0;
-  while(index < size){
-    pthread_join(ids[index], NULL);
-    index++;
+  for(int n=0;n<size;++n){
+    pthread_join(ids[n], NULL);
+    //printf("thread %i exit \n", n );
   }
 
 
@@ -44,15 +42,14 @@ int main (int argc, char** argv){
 
 void* phonecall(void* vargp) {
   int call_id;
-  sem_t id_lock;
+  static sem_t id_lock;
   sem_init(&id_lock,0,1);
   sem_wait(&id_lock);
   next_id++;
   sem_post(&id_lock);
   call_id=next_id;
+ 
 
-  printf("Thread[%d] is calling, busy signal\n", call_id); //*((unsigned int *)(vargp)));
-  
   static int NUM_OPERATORS = 3;
   static int NUM_LINES = 5;
   static int connected = 0; // Callers that are connected
@@ -60,44 +57,48 @@ void* phonecall(void* vargp) {
   static sem_t operators;
   sem_init(&operators, 0, 3);
   sem_init(&connected_lock, 0, 1);
-  bool done=false;
-
-  //sem_wait(&connected_lock);
-  while(1){
+  bool found=false;
+  printf("Thread[%d] is calling, busy signal\n", call_id);
+  
   sem_wait(&connected_lock);
-  if(connected == NUM_LINES){
-    //printf("ALL LINES ARE BUSY.\n");
-    sem_post(&connected_lock);
-    //printf("ALL LINES ARE BUSY.\n");
+  while(1){
+  //sem_wait(&connected_lock);
+  if(connected != NUM_LINES){
+    found=true;
+    connected++; //increment connected callers
+    break;
+    sem_post(&connected_lock); //exit critical section
+    //break;
     
   }
   else{
     //sem_wait(&connected_lock); //critical section of connected begins
-    num_ticket--;
-    connected++; //increment connected callers
-    sem_post(&connected_lock); //exit critical section
-    break;
+    printf("Thread[%d] is declined, lines are busy\n", call_id);
+    break;   
       }
   }
-    
+  sem_post(&connected_lock); 
+
     sem_wait(&operators);
-    printf("Thread[%d] is speaking to the operator\n", call_id);//*((unsigned int *)(vargp)));
+    printf("Thread[%d] is speaking to operator\n", call_id);//*((unsigned int *)(vargp)));
+    num_ticket--;
     sleep(3);
     printf("Thread[%d] has bought a ticket!\n", call_id); //*((unsigned int *)(vargp)));
+    sem_post(&operators);
+    
     sem_wait(&connected_lock); //critical section of connected begins
     connected--; //increment connected callers
     sem_post(&connected_lock); //exit critical section
-    
-    sem_post(&operators);
-  
 
     /*sem_wait(&connected_lock); //critical section of connected begins
     connected--; //increment connected callers
     sem_post(&connected_lock); //exit critical section*/
     
-    printf("Thread[%d] has hung up!\n", call_id);//*((unsigned int *)(vargp)));
+    printf("Thread[%d] has hung up!\n", call_id);
 
-
+    sem_destroy(&connected_lock);
+    sem_destroy(&operators);
+    sem_destroy(&id_lock);
 //Check if the connection can be made:
 //  You'll need to test connected in a critical section
 //  If the line is busy, exit the critical section, print a message, and try again
