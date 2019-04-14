@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
 #include <stdbool.h>
-
 #include <pthread.h>
 #include <semaphore.h>
 
@@ -28,14 +26,13 @@ int main (int argc, char** argv){
     pthread_create(&tid, NULL, phonecall, NULL);
     ids[n]=tid;
   }
-  //index = 0;
   for(int n=0;n<size;++n){
     pthread_join(ids[n], NULL);
     //printf("thread %i exit \n", n );
   }
 
   printf("TICKETS REMAIN: %i TICKETS\n",num_ticket);
-  exit(0);
+
   return 0;
 
 }
@@ -72,22 +69,30 @@ void* phonecall(void* vargp) {
     }
     else{
       connected++; //increment connected callers
+      //printf("Thread[%d] has been connected to a line!\n", call_id);
       sem_post(&connected_lock); //exit critical section
-      printf("Thread[%d] has been connected to an operator!\n", call_id); //*((unsigned int *)(vargp)));
+      printf("Thread[%d] has been connected to a line!\n", call_id); //*((unsigned int *)(vargp)));
+      //sem_wait(&operators);
+      //sleep(3);
       break;
-
       }
   }
 
     sem_wait(&operators);
-
     printf("Thread[%d] is speaking to operator\n", call_id);//*((unsigned int *)(vargp)));
     num_ticket--;
     sleep(3);
     printf("Thread[%d] has bought a ticket!\n", call_id); //*((unsigned int *)(vargp)));
+    
+
+
+    sem_wait(&connected_lock); //critical section of connected begins
+    connected--; //increment connected callers
+    sem_post(&connected_lock); //exit critical section
+
     sem_post(&operators);
     
-    sem_wait(&connected_lock); //critical section of connected begins
+    /*sem_wait(&connected_lock); //critical section of connected begins
     connected--; //increment connected callers
     sem_post(&connected_lock); //exit critical section
 
@@ -95,7 +100,9 @@ void* phonecall(void* vargp) {
     connected--; //increment connected callers
     sem_post(&connected_lock); //exit critical section*/
     
+
     printf("Thread[%d] has hung up!\n", call_id);
+
 
     sem_destroy(&connected_lock);
     sem_destroy(&operators);
