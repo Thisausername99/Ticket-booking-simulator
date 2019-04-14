@@ -82,12 +82,11 @@ void* phonecall(void* vargp) {
       connected++; //increment connected callers
       sem_post(&connected_lock); //exit critical section
       printf("Thread[%d] has been connected to an operator!\n", call_id); //*((unsigned int *)(vargp)));
+      sleep(3);
       break;
       }
   }
-    
     sem_wait(&operators);
-    sleep(3);
     printf("Thread[%d] has bought a ticket!\n", call_id); //*((unsigned int *)(vargp)));
     sem_wait(&connected_lock); //critical section of connected begins
     connected--; //increment connected callers
@@ -102,6 +101,8 @@ void* phonecall(void* vargp) {
     
     printf("Thread[%d] has hung up!\n", call_id);//*((unsigned int *)(vargp)));
 
+    sem_destroy(&operators);
+    sem_destroy(&connected_lock);
 
 //Check if the connection can be made:
 //  You'll need to test connected in a critical section
