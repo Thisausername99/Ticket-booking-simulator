@@ -1,109 +1,80 @@
 #include <stdio.h>
-
 #include <stdlib.h>
-
 #include <unistd.h>
-
-#include <stdbool.h>
-
 #include <pthread.h>
-
 #include <semaphore.h>
 
 
-int next_id;
-sem_t id_lock;
-sem_t connected_lock;
-sem_t operators;
-int num_ticket = 240;
+int next_id; //global variable for call ids
+sem_t id_lock; //semaphore for next_id
+sem_t connected_lock; //semaphore for connected
+sem_t operators; //semaphore for operators
 
 void * phonecall(void * vargp); //phonecall routine prototype
 
 int main(int argc, char ** argv) {
+  sem_init(&operators, 0, 3); //initialize operator counting semaphore
+  sem_init(&connected_lock, 0, 1); //initialize connected binary semaphore
+  sem_init(&id_lock, 0, 1); //initialize next_id binary semaphore
 
-  sem_init( & operators, 0, 3);
-  sem_init( & connected_lock, 0, 1);
-  sem_init( & id_lock, 0, 1);
-
-  int index = 0;
-  if (argc <= 1) {
+  if (argc <= 1) { //check if there is input
     printf("ERROR: no call input\n");
-    return -1;
+    return -1; 
+  }
+  
+  int size = atoi(argv[1]); //convert the string form of the number of iterations argument to an int
+  pthread_t ids[size]; //array of pthread_t to store thread ids
+
+  for (int n = 0; n < size; ++n) { //loop to create threads
+    pthread_create(&ids[n], NULL, phonecall, NULL); //creates threads and stores their ids in the ids array
   }
 
-  int size = atoi(argv[1]);
-  pthread_t ids[size];
-
-  for (int n = 0; n < size; ++n) {
-    pthread_t tid;
-    pthread_create( & tid, NULL, phonecall, NULL);
-    ids[n] = tid;
+  for (int n = 0; n < size; ++n) { //loop to join threads
+    pthread_join(ids[n], NULL); //joins thread using the id in the array
   }
 
-  for (int n = 0; n < size; ++n) {
-    pthread_join(ids[n], NULL);
-
-  }
-
-  sem_destroy( & connected_lock);
-  sem_destroy( & operators);
-  sem_destroy( & id_lock);
-  printf("TICKETS REMAIN: %i TICKETS\n", num_ticket);
+  sem_destroy(&connected_lock); //destroys connected semaphore
+  sem_destroy(&operators); //destroys operators semaphore
+  sem_destroy(&id_lock); //destroys next_id semaphore
   return 0;
-
 }
 
 void * phonecall(void * vargp) {
-  /*static sem_t id_lock;
-  sem_init(&id_lock,0,1);*/
+  int call_id; //instantiate call_id
+  sem_wait(&id_lock); //locks next_id semaphore, start of critical section
+    next_id++; //increment next_id
+  sem_post(&id_lock); //unlocks next_id semaphore, end of critical section
+  call_id = next_id; //sets call_id to the current next_id
+  int print = 0; //boolean to ensure the busy signal line is printed once
 
-  int call_id;
-  sem_wait( & id_lock);
-  next_id++;
-  sem_post( & id_lock);
-  call_id = next_id;
-  int print = 0;
+  static int NUM_LINES = 5; //max number of lines that can be in the "queue"
+  static int NUM_OPERATORS = 3; //max number of operators that can sell tickets
+  static int connected = 0; //callers that are connected
 
-  static int NUM_LINES = 5;
-  static int NUM_OPERATORS = 3;
-  static int connected = 0; // Callers that are connected
-  /*static sem_t connected_lock;
-  static sem_t operators;
-  sem_init(&operators, 0, 3);
-  sem_init(&connected_lock, 0, 1);*/
-
-  while (1) {
-    sem_wait( & connected_lock);
+  while (1) { //loop to keep the callers in until they can buy a ticket
     if (connected == NUM_LINES) {
-      sem_post( & connected_lock);
-      if (print == 0) {
-        printf("Thread[%d] has a busy signal...\n", call_id); //*((unsigned int *)(vargp)));
-        print = 1;
+      if (print == 0) { //if busy signal line not printed yet
+        printf("Thread[%d] has a busy signal...\n", call_id);
+        print = 1; //sets print to be true since line has been printed
       }
     } else {
-      connected++; //increment connected callers
-      //printf("Thread[%d] has been connected to a line!\n", call_id);
-      sem_post( & connected_lock); //exit critical section
+      sem_wait(&connected_lock); //locks connected semaphore, start of critical section
+        connected++; //increment connected callers
+      sem_post(&connected_lock); //unlocks connected semaphore, end of crititcal section
       printf("Thread[%d] has been connected to a line!\n", call_id);
-      //sem_wait(&operators);
-      sleep(1); // IF COMMENT THIS THEN PROGRAM WILL HANG
       break;
     }
   }
 
-  sem_wait( & operators);
-  printf("Thread[%d] is speaking to operator\n", call_id);
-  num_ticket--;
-  sleep(3);
-  printf("Thread[%d] has bought a ticket!\n", call_id);
-
-  sem_wait( & connected_lock); //critical section of connected begins
-  connected--; //increment connected callers
-  sem_post( & connected_lock); //exit critical section
-
-  sem_post( & operators);
+  sem_wait(&operators); //locks operators semaphore, start of critical section
+    printf("Thread[%d] is speaking to operator\n", call_id);
+    sleep(3);
+    printf("Thread[%d] has bought a ticket!\n", call_id);
+    sem_wait(&connected_lock); //locks connected semaphore, start of critical section
+      connected--; //decrement connected callers
+    sem_post(&connected_lock); //unlockslocks operators semaphore, end of critical section
+  sem_post(&operators); //unlocks operators semaphore, end of critical section
 
   printf("Thread[%d] has hung up!\n", call_id);
-
   return NULL;
 }
