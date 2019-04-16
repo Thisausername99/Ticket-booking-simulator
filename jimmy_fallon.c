@@ -92,10 +92,10 @@ void * phonecall(void * vargp) {
   }
 
   sem_wait( & operators);
-  printf("Thread[%d] is speaking to operator\n", call_id);
+  printf("Thread[%d] is speaking to operator\n",call_id);
   num_ticket--;
   sleep(3);
-  printf("Thread[%d] has bought a ticket!\n", call_id);
+  printf("Thread[%d] has bought a ticket!\n",call_id);
 
   sem_wait( & connected_lock); //critical section of connected begins
   connected--; //increment connected callers
