@@ -40,6 +40,8 @@ int main(int argc, char ** argv) {
   return 0;
 }
 
+
+
 void * phonecall(void * vargp) {
   int call_id; //instantiate call_id
   sem_wait(&id_lock); //locks next_id semaphore, start of critical section
