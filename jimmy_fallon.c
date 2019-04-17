@@ -6,10 +6,10 @@
 #define NUM_OPERATORS 3
 
 
-int next_id; //global variable for call ids
-sem_t id_lock; //semaphore for next_id
-sem_t connected_lock; //semaphore for connected
-sem_t operators; //semaphore for operators
+static int next_id; //global variable for call ids
+static sem_t id_lock; //semaphore for next_id
+static sem_t connected_lock; //semaphore for connected
+static sem_t operators; //semaphore for operators
 
 void * phonecall(void * vargp); //phonecall routine prototype
 
