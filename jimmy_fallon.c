@@ -51,7 +51,6 @@ void * phonecall(void * vargp) {
   int print = 0; //boolean to ensure the busy signal line is printed once
 
   static int NUM_LINES = 5; //max number of lines that can be in the "queue"
-  //static int NUM_OPERATORS = 3; //max number of operators that can sell tickets
   static int connected = 0; //callers that are connected
 
   while (1) { //loop to keep the callers in until they can buy a ticket
@@ -60,11 +59,11 @@ void * phonecall(void * vargp) {
       sem_post(&connected_lock); //unlocks connected semaphore, end of critical section
       if (print == 0) { //if busy signal line not printed yet
         printf("Thread[%d] has a busy signal...\n", call_id);
-        //sleep(1);
         print = 1; //sets print to be true since line has been printed
       }
-    } else {
-        connected++; //increment connected callers
+    } 
+    else {
+      connected++; //increment connected callers
       sem_post(&connected_lock); //unlocks connected semaphore, end of critical section
       printf("Thread[%d] has been connected to a line!\n", call_id);
       break;
