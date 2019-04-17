@@ -3,6 +3,9 @@ https://youtu.be/57GHi8Er964
 Thread and synchronization by Huy Hoang, Veronica Gusev, and Nhan Le
 
 Important details:
+  The hardest part of the implementation was making sure things were in the right critical sections and getting the semaphores to work properly. 
+  We made our semaphores static global variables so that we can initialize them in main instead of in phonecall since it was causing problems. 
+  The while loop we keep the calls in while they wait for an available line only prints that the lines are busy once by using a boolean print so that the console doesn't repeatedly say that the lines are busy. 
   
 
 Grading breakdown:
