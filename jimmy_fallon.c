@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <semaphore.h>
-#define NUM_OPERATORS 3
+#define NUM_OPERATORS 3 //number of operators that can sell tickets
 
 
 static int next_id; //global variable for call ids
@@ -57,7 +57,7 @@ void * phonecall(void * vargp) {
   while (1) { //loop to keep the callers in until they can buy a ticket
     sem_wait(&connected_lock);
     if (connected == NUM_LINES) {
-      sem_post(&connected_lock); //unlocks connected semaphore, end of crititcal section
+      sem_post(&connected_lock); //unlocks connected semaphore, end of critical section
       if (print == 0) { //if busy signal line not printed yet
         printf("Thread[%d] has a busy signal...\n", call_id);
         //sleep(1);
@@ -65,7 +65,7 @@ void * phonecall(void * vargp) {
       }
     } else {
         connected++; //increment connected callers
-      sem_post(&connected_lock); //unlocks connected semaphore, end of crititcal section
+      sem_post(&connected_lock); //unlocks connected semaphore, end of critical section
       printf("Thread[%d] has been connected to a line!\n", call_id);
       break;
     }
@@ -73,7 +73,7 @@ void * phonecall(void * vargp) {
 
   sem_wait(&operators); //locks operators semaphore, start of critical section
     printf("Thread[%d] is speaking to operator\n", call_id);
-    sleep(3);
+    sleep(3); //simulate buying the ticket
     printf("Thread[%d] has bought a ticket!\n", call_id);
     sem_wait(&connected_lock); //locks connected semaphore, start of critical section
       connected--; //decrement connected callers
